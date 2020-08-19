@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextInputProps } from 'react-native';
 
-import { Container, Icon, CustomTextInput } from './styles';
+import { Container, Icon, TextInput } from './styles';
 
 interface InputProps extends TextInputProps {
   name: string;
@@ -11,7 +11,7 @@ interface InputProps extends TextInputProps {
 const Input: React.FC<InputProps> = ({ name, icon, ...rest }) => (
   <Container>
     <Icon name={icon} size={20} color="#666360" />
-    <CustomTextInput
+    <TextInput
       keyboardAppearance="dark"
       placeholderTextColor="#fff"
       {...rest}
