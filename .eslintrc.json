@@ -43,6 +43,7 @@
       "operator-linebreak": "off",
       "arrow-parens": "off",
       "camelcase": "off",
+      "react/jsx-one-expression-per-line": "warn",
       // "prettier/prettier": "off",
 
       "import/extensions": [
