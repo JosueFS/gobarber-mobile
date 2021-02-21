@@ -46,8 +46,6 @@ const SignIn: React.FC = () => {
 
   const { signIn, user } = useAuth();
 
-  console.log(user);
-
   const handleSignIn = useCallback(async (data: SignInCredentials) => {
     try {
       formRef.current?.setErrors({});
@@ -64,8 +62,6 @@ const SignIn: React.FC = () => {
       });
 
       await signIn(data);
-
-      // history.push('/dashboard');
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const errors = getValidationErrors(err);
