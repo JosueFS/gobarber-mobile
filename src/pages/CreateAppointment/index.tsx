@@ -1,11 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-// import { Calendar as DateTimePicker } from 'react-native-calendars';
+// import DateTimePicker from '@react-native-community/datetimepicker';
+import {
+  Calendar as DateTimePicker,
+  LocaleConfig,
+} from 'react-native-calendars';
+
 import Icon from 'react-native-vector-icons/Feather';
 
-import { Platform } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import {
   Container,
   Header,
@@ -44,7 +49,10 @@ const CreateAppointment: React.FC = () => {
 
   const [providers, setProviders] = useState<IProvider[]>([]);
   const [selectedProvider, setSelectedProvider] = useState(providerId);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  // const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split('T')[0],
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
@@ -65,11 +73,46 @@ const CreateAppointment: React.FC = () => {
     setShowDatePicker(state => !state);
   }, []);
 
-  const handleDateChange = useCallback((event: any, date: Date | undefined) => {
+  const handleDateChange = useCallback((date: string | undefined) => {
     if (Platform.OS === 'android') setShowDatePicker(false);
 
     if (date) setSelectedDate(date);
   }, []);
+
+  LocaleConfig.locales['pt-br'] = {
+    monthNames: [
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
+    ],
+    monthNamesShort: [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ],
+    dayNamesShort: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
+    dayNames: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'],
+  };
+
+  LocaleConfig.defaultLocale = 'pt-br';
 
   return (
     <Container>
@@ -110,7 +153,7 @@ const CreateAppointment: React.FC = () => {
           <OpenDatePickerButtonText>Selecionar Data</OpenDatePickerButtonText>
         </OpenDatePickerButton>
 
-        {showDatePicker && (
+        {/* {showDatePicker && (
           <DateTimePicker
             {...(Platform.OS === 'ios' && { textColor: '#f4ede8' })}
             mode="date"
@@ -118,9 +161,136 @@ const CreateAppointment: React.FC = () => {
             value={selectedDate}
             onChange={handleDateChange}
           />
-        )}
+        )} */}
 
-        {/* {showDatePicker && <DateTimePicker key="@!#!@#!@#!@#" />} */}
+        {showDatePicker && (
+          <DateTimePicker
+            key="@!#!@#!@#!@#"
+            minDate={new Date()}
+            onDayPress={day => handleDateChange(day.dateString)}
+            hideExtraDays
+            markedDates={{
+              [selectedDate]: {
+                selected: true,
+                selectedColor: '#ff9900',
+              },
+            }}
+            style={{
+              margin: 24,
+              borderRadius: 10,
+            }}
+            theme={{
+              backgroundColor: '#28262e',
+              calendarBackground: '#28262e',
+              textDayHeaderFontSize: 16,
+
+              'stylesheet.calendar.header': {
+                header: {
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  backgroundColor: '#3e3b47',
+                  borderTopLeftRadius: 10,
+                  borderTopRightRadius: 10,
+                  margin: 0,
+                  paddingTop: 6,
+                  paddingBottom: 6,
+                },
+                monthText: {
+                  fontSize: 16,
+                  fontFamily: 'RobotoSlab-Medium',
+                  color: '#f4ede8',
+                },
+                dayHeader: {
+                  marginTop: 2,
+                  marginBottom: 7,
+                  width: 40,
+                  textAlign: 'center',
+                  fontSize: 16,
+                  fontFamily: 'RobotoSlab-Regular',
+                  color: '#f4ede8',
+                },
+              },
+              'stylesheet.calendar.main': {
+                container: {
+                  padding: 0,
+                  backgroundColor: '#28262e',
+                },
+                monthView: {
+                  paddingTop: 6,
+                  paddingBottom: 6,
+                  margin: 0,
+                },
+                week: {
+                  marginTop: 5,
+                  marginBottom: 7,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-around',
+                },
+              },
+            }}
+            dayComponent={({ date, state }) =>
+              state !== 'disabled' ? (
+                <TouchableOpacity
+                  onPress={() => handleDateChange(date.dateString)}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    alignItems: 'center',
+                    alignSelf: 'center',
+                    borderRadius: 4,
+                    backgroundColor:
+                      date.dateString === selectedDate ? '#FF9900' : '#3e3b47',
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      textAlign: 'center',
+                      fontFamily: 'RobotoSlab-Regular',
+                      lineHeight: 40,
+                      color:
+                        date.dateString === selectedDate ? '#000' : '#f4ede8',
+                    }}
+                  >
+                    {date.day}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <View
+                  style={{
+                    width: 40,
+                    height: 40,
+                    alignItems: 'center',
+                    alignSelf: 'center',
+                    borderRadius: 4,
+                    backgroundColor:
+                      date.dateString === selectedDate ? '#FF9900' : '#3e3b47',
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      textAlign: 'center',
+                      fontFamily: 'RobotoSlab-Regular',
+                      lineHeight: 40,
+                      color: '#666360',
+                    }}
+                  >
+                    {date.day}
+                  </Text>
+                </View>
+              )
+            }
+            renderArrow={direction => {
+              if (direction === 'left') {
+                return <Icon name="arrow-left" color="#999591" size={24} />;
+              }
+              return <Icon name="arrow-right" color="#999591" size={24} />;
+            }}
+          />
+        )}
       </Calendar>
     </Container>
   );

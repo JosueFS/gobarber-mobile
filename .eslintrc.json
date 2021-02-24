@@ -44,6 +44,8 @@
       "arrow-parens": "off",
       "camelcase": "off",
       "react/jsx-one-expression-per-line": "warn",
+      "no-confusing-arrow": "off",
+      "react/jsx-curly-newline": "off",
       // "prettier/prettier": "off",
 
       "import/extensions": [
