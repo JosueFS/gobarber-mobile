@@ -6,6 +6,16 @@ interface IProviderContainerProps {
   selected: boolean;
 }
 
+interface IDayProps {
+  state: '' | 'selected' | 'disabled' | 'today';
+  selected: boolean;
+}
+
+interface IDayTextProps {
+  state: '' | 'selected' | 'disabled' | 'today';
+  selected: boolean;
+}
+
 interface IAvailabilityProps {
   available: boolean;
   selected: boolean;
@@ -79,6 +89,30 @@ export const ProviderName = styled.Text<IProviderContainerProps>`
 
 export const Calendar = styled.View``;
 
+export const Day = styled(RectButton)<IDayProps>`
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  align-self: center;
+  border-radius: 4px;
+  background-color: ${props => (props.selected ? '#FF9900' : '#3e3b47')};
+`;
+
+export const DayText = styled.Text<IDayProps>`
+  font-size: 16px;
+  text-align: center;
+  font-family: 'RobotoSlab-Regular';
+  line-height: 40px;
+  color: ${props => {
+    if (props.state === 'disabled') {
+      return '#666360';
+    }
+    if (props.selected) {
+      return '#232129';
+    }
+    return '#f4efe8';
+  }};
+`;
 export const Title = styled.Text`
   font-family: 'RobotoSlab-Medium';
   color: #f4ede8;

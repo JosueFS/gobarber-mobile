@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigation, useRoute } from '@react-navigation/native';
-// import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   Calendar as DateTimePicker,
   LocaleConfig,
@@ -24,6 +23,8 @@ import {
   ProviderName,
   ProviderContainer,
   Calendar,
+  Day,
+  DayText,
   Title,
   OpenDatePickerButton,
   OpenDatePickerButtonText,
@@ -62,7 +63,6 @@ const CreateAppointment: React.FC = () => {
 
   const [providers, setProviders] = useState<IProvider[]>([]);
   const [selectedProvider, setSelectedProvider] = useState(providerId);
-  // const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split('T')[0],
   );
@@ -214,16 +214,6 @@ const CreateAppointment: React.FC = () => {
             <OpenDatePickerButtonText>Selecionar Data</OpenDatePickerButtonText>
           </OpenDatePickerButton>
 
-          {/* {showDatePicker && (
-          <DateTimePicker
-            {...(Platform.OS === 'ios' && { textColor: '#f4ede8' })}
-            mode="date"
-            display={Platform.OS === 'android' ? 'calendar' : 'spinner'}
-            value={selectedDate}
-            onChange={handleDateChange}
-          />
-        )} */}
-
           {showDatePicker && (
             <DateTimePicker
               key="@!#!@#!@#!@#"
@@ -291,63 +281,21 @@ const CreateAppointment: React.FC = () => {
                   },
                 },
               }}
-              dayComponent={({ date, state }) =>
-                state !== 'disabled' ? (
-                  <TouchableOpacity
-                    onPress={() => handleDateChange(date.dateString)}
-                    style={{
-                      width: 40,
-                      height: 40,
-                      alignItems: 'center',
-                      alignSelf: 'center',
-                      borderRadius: 4,
-                      backgroundColor:
-                        date.dateString === selectedDate
-                          ? '#FF9900'
-                          : '#3e3b47',
-                    }}
+              dayComponent={({ date, state }) => (
+                <Day
+                  enabled={state !== 'disabled'}
+                  state={state}
+                  selected={selectedDate === date.dateString}
+                  onPress={() => handleDateChange(date.dateString)}
+                >
+                  <DayText
+                    state={state}
+                    selected={selectedDate === date.dateString}
                   >
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        textAlign: 'center',
-                        fontFamily: 'RobotoSlab-Regular',
-                        lineHeight: 40,
-                        color:
-                          date.dateString === selectedDate ? '#000' : '#f4ede8',
-                      }}
-                    >
-                      {date.day}
-                    </Text>
-                  </TouchableOpacity>
-                ) : (
-                  <View
-                    style={{
-                      width: 40,
-                      height: 40,
-                      alignItems: 'center',
-                      alignSelf: 'center',
-                      borderRadius: 4,
-                      backgroundColor:
-                        date.dateString === selectedDate
-                          ? '#FF9900'
-                          : '#3e3b47',
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        textAlign: 'center',
-                        fontFamily: 'RobotoSlab-Regular',
-                        lineHeight: 40,
-                        color: '#666360',
-                      }}
-                    >
-                      {date.day}
-                    </Text>
-                  </View>
-                )
-              }
+                    {date.day}
+                  </DayText>
+                </Day>
+              )}
               renderArrow={direction => {
                 if (direction === 'left') {
                   return <Icon name="arrow-left" color="#999591" size={24} />;
