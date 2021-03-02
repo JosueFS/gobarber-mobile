@@ -1,8 +1,9 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  View,
   TextInput,
   Alert,
 } from 'react-native';
@@ -21,6 +22,7 @@ import getValidationErrors from '../../utils/getValidationErrors';
 
 import {
   Container,
+  Content,
   Title,
   Header,
   BackButton,
@@ -34,20 +36,25 @@ import { useAuth } from '../../hooks/auth';
 interface ProfileFormData {
   name: string;
   email: string;
+  old_password: string;
   password: string;
+  password_confirmation: string;
 }
 
 const Profile: React.FC = () => {
   const formRef = useRef<FormHandles>(null);
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   const emailInputRef = useRef<TextInput>(null);
   const oldPasswordInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
   const passwordConfirmationInputRef = useRef<TextInput>(null);
 
-  const handleProfile = useCallback(
+  const handleGoBack = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
+  const handleUpdateProfile = useCallback(
     async (data: ProfileFormData) => {
       try {
         formRef.current?.setErrors({});
@@ -57,21 +64,52 @@ const Profile: React.FC = () => {
           email: Yup.string()
             .required('E-mail obrigatório')
             .email('Digite um e-mail válido'),
-          password: Yup.string().min(6, 'No mínimo 6 dígitos'),
+          old_password: Yup.string(),
+          password: Yup.string().when('old_password', {
+            is: val => !!val.length,
+            then: Yup.string().required('Campo obrigatório'),
+            otherwise: Yup.string(),
+          }),
+          password_confirmation: Yup.string()
+            .when('old_password', {
+              is: val => !!val.length,
+              then: Yup.string().required('Campo obrigatório'),
+              otherwise: Yup.string(),
+            })
+            .oneOf([Yup.ref('password')], 'Confirmação incorreta'),
         });
 
         await schema.validate(data, {
           abortEarly: false,
         });
 
-        await api.post('/users', data);
+        const {
+          name,
+          email,
+          old_password,
+          password,
+          password_confirmation,
+        } = data;
+
+        const formData = {
+          name,
+          email,
+          ...(old_password
+            ? {
+                old_password,
+                password,
+                password_confirmation,
+              }
+            : {}),
+        };
+
+        const response = await api.put('profile', formData);
+
+        updateUser(response.data);
+
+        Alert.alert('Perfil Atualizado');
 
         navigation.goBack();
-
-        Alert.alert(
-          'Cadastro Realizado',
-          'Você já pode acessar nossa aplicação!',
-        );
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
           const errors = getValidationErrors(err);
@@ -82,8 +120,8 @@ const Profile: React.FC = () => {
         }
 
         Alert.alert(
-          'Erro no cadastro',
-          'Ocorreu um erro ao fazer cadastro, verifique as informações',
+          'Erro na atualização do Perfil',
+          'Ocorreu um erro ao atualizar seu perfil, tente novamente',
         );
       }
     },
@@ -92,33 +130,29 @@ const Profile: React.FC = () => {
 
   return (
     <>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior="position"
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
-        enabled
-      >
-        <Header>
-          <BackButton onPress={() => {}}>
-            <Icon name="chevron-left" size={20} color="#999591" />
-          </BackButton>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+        <Container>
+          <Header>
+            <BackButton onPress={handleGoBack}>
+              <Icon name="chevron-left" size={20} color="#999591" />
+            </BackButton>
 
-          <Title>Meu perfil</Title>
+            <Title>Meu perfil</Title>
 
-          <LogoutButton onPress={() => {}}>
-            <Icon name="power" size={20} color="#999591" />
-          </LogoutButton>
-        </Header>
+            <LogoutButton onPress={() => {}}>
+              <Icon name="power" size={20} color="#999591" />
+            </LogoutButton>
+          </Header>
 
-        <ScrollView keyboardShouldPersistTaps="handled">
-          <Container>
+          <Content>
             <UserAvatarButton onPress={() => {}}>
               <UserAvatar source={{ uri: user.avatar_url }} />
             </UserAvatarButton>
 
             <Form
+              initialData={user}
               ref={formRef}
-              onSubmit={handleProfile}
+              onSubmit={handleUpdateProfile}
               style={{ width: '100%' }}
             >
               <Input
@@ -190,8 +224,8 @@ const Profile: React.FC = () => {
                 Salvar Alterações
               </Button>
             </Form>
-          </Container>
-        </ScrollView>
+          </Content>
+        </Container>
       </KeyboardAvoidingView>
     </>
   );

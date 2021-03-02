@@ -1,8 +1,15 @@
 import styled from 'styled-components/native';
 import { Platform } from 'react-native';
 
+export const Container = styled.View`
+  flex: 1;
+`;
+
 export const Header = styled.View`
-  padding: 8px 16px;
+  z-index: 9;
+  padding: 0 16px 8px;
+
+  background: #312e38;
 
   flex-direction: row;
   justify-content: space-between;
@@ -18,13 +25,15 @@ export const Title = styled.Text`
 
 export const LogoutButton = styled.TouchableOpacity``;
 
-export const Container = styled.View`
+export const Content = styled.View`
+  z-index: 1;
   flex-grow: 1;
   position: relative;
   justify-content: center;
 
   padding: 0 30px ${Platform.OS === 'android' ? 50 : 0}px;
 `;
+
 export const UserAvatarButton = styled.TouchableOpacity`
   padding: 8px 24px;
 `;
