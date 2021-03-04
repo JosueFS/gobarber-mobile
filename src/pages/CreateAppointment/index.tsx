@@ -7,9 +7,8 @@ import {
 import { format } from 'date-fns';
 import Icon from 'react-native-vector-icons/Feather';
 
-import { Platform, Text, View } from 'react-native';
+import { Alert } from 'react-native';
 
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import {
   Container,
   Header,
@@ -34,6 +33,8 @@ import {
   Hour,
   SectionContent,
   Section,
+  CreateAppointmentButton,
+  CreateAppointmentButtonText,
 } from './styles';
 import { useAuth } from '../../hooks/auth';
 import api from '../../services/api';
@@ -57,7 +58,7 @@ interface IAvailabilityItem {
 const CreateAppointment: React.FC = () => {
   const route = useRoute();
   const { user } = useAuth();
-  const { goBack } = useNavigation();
+  const { goBack, navigate } = useNavigation();
 
   const { providerId } = route.params as IRouteParams;
 
@@ -103,7 +104,7 @@ const CreateAppointment: React.FC = () => {
   }, []);
 
   const handleDateChange = useCallback((date: string | undefined) => {
-    if (Platform.OS === 'android') setShowDatePicker(false);
+    setShowDatePicker(false);
 
     if (date) {
       setSelectedHour(0);
@@ -114,6 +115,27 @@ const CreateAppointment: React.FC = () => {
   const handleSelectHour = useCallback((hour: number) => {
     setSelectedHour(hour);
   }, []);
+
+  const handleCreateAppointment = useCallback(async () => {
+    try {
+      const date = new Date(selectedDate);
+
+      date.setHours(selectedHour);
+      date.setMinutes(0);
+
+      await api.post('appointments', {
+        provider_id: selectedProvider,
+        date,
+      });
+
+      navigate('AppointmentCreated', { date: date.getTime() });
+    } catch (err) {
+      Alert.alert(
+        'Erro ao criar agendamento',
+        'Ocorreu um erro ao tentar criar o agendamento, tente novamente!',
+      );
+    }
+  }, [selectedDate, selectedHour, selectedProvider, navigate]);
 
   const morningAvailability = useMemo(
     () =>
@@ -218,7 +240,7 @@ const CreateAppointment: React.FC = () => {
             <DateTimePicker
               key="@!#!@#!@#!@#"
               minDate={new Date()}
-              onDayPress={day => handleDateChange(day.dateString)}
+              // onDayPress={day => handleDateChange(day.dateString)}
               hideExtraDays
               markedDates={{
                 [selectedDate]: {
@@ -349,6 +371,10 @@ const CreateAppointment: React.FC = () => {
             </SectionContent>
           </Section>
         </Schedule>
+
+        <CreateAppointmentButton onPress={handleCreateAppointment}>
+          <CreateAppointmentButtonText>Agendar</CreateAppointmentButtonText>
+        </CreateAppointmentButton>
       </Content>
     </Container>
   );
