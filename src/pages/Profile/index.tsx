@@ -1,14 +1,9 @@
-import React, { useRef, useCallback, useState } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-  TextInput,
-  Alert,
-} from 'react-native';
+import React, { useRef, useCallback } from 'react';
+import { KeyboardAvoidingView, TextInput, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
+import ImagePicker from 'react-native-image-picker';
+
 import * as Yup from 'yup';
 
 import { Form } from '@unform/mobile';
@@ -22,13 +17,13 @@ import getValidationErrors from '../../utils/getValidationErrors';
 
 import {
   Container,
-  Content,
   Title,
   Header,
   BackButton,
   LogoutButton,
   UserAvatar,
   UserAvatarButton,
+  Content,
 } from './styles';
 
 import { useAuth } from '../../hooks/auth';
@@ -54,6 +49,7 @@ const Profile: React.FC = () => {
   const handleGoBack = useCallback(() => {
     navigation.goBack();
   }, [navigation]);
+
   const handleUpdateProfile = useCallback(
     async (data: ProfileFormData) => {
       try {
@@ -125,8 +121,41 @@ const Profile: React.FC = () => {
         );
       }
     },
-    [navigation],
+    [navigation, updateUser],
   );
+
+  const handleUpdateUserAvatar = useCallback(() => {
+    ImagePicker.showImagePicker(
+      {
+        title: 'Escolha uma foto',
+        cancelButtonTitle: 'Cancelar',
+        takePhotoButtonTitle: 'Tirar foto',
+        chooseFromLibraryButtonTitle: 'Escolher da galeria',
+      },
+      response => {
+        if (response.didCancel) {
+          return;
+        }
+
+        if (response.error) {
+          Alert.alert('Erro ao atualizar seu avatar');
+          return;
+        }
+
+        const data = new FormData();
+
+        data.append('avatar', {
+          type: 'image/jpeg',
+          name: `${user.id}.jpg`,
+          uri: response.uri,
+        });
+
+        api.patch('users/avatar', data).then(res => {
+          updateUser(res.data);
+        });
+      },
+    );
+  }, [updateUser, user.id]);
 
   return (
     <>
@@ -145,7 +174,7 @@ const Profile: React.FC = () => {
           </Header>
 
           <Content>
-            <UserAvatarButton onPress={() => {}}>
+            <UserAvatarButton onPress={handleUpdateUserAvatar}>
               <UserAvatar source={{ uri: user.avatar_url }} />
             </UserAvatarButton>
 

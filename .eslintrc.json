@@ -1,6 +1,7 @@
 {
     "env": {
-        "es6": true
+        "es6": true,
+        "browser": true
     },
     "extends": [
         "plugin:react/recommended",
@@ -47,6 +48,7 @@
       "no-confusing-arrow": "off",
       "react/jsx-curly-newline": "off",
       "indent": "off",
+      "import/no-duplicates": "off",
       // "prettier/prettier": "off",
 
       "import/extensions": [
